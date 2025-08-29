@@ -4,6 +4,9 @@
 # Executables
 main
 
+# Build directories
+build/
+
 # IDE/editor files
 *.vscode/
 *.DS_Store
