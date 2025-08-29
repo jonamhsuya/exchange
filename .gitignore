@@ -1,0 +1,9 @@
+# Compiled object files
+*.o
+
+# Executables
+main
+
+# IDE/editor files
+*.vscode/
+*.DS_Store
