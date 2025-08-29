@@ -67,15 +67,13 @@ void OrderBook::matchOrders() {
 
 void OrderBook::printBook() {
     cout << "Bids:\n";
-    for (auto& [price, level] : bidLadder) {
-        cout << price << ": ";
-        for (Order& order : level.orders) cout << order.quantity << " ";
-        cout << "\n";
+    for (auto it = bidLadder.rbegin(); it != bidLadder.rend(); ++it) {
+        cout << it->first << " : " << it->second.totalQuantity << "\n";
     }
+
     cout << "\nAsks:\n";
-    for (auto& [price, level] : askLadder) {
-        cout << price << ": ";
-        for (Order& order : level.orders) cout << order.quantity << " ";
-        cout << "\n";
+    for (auto it = askLadder.begin(); it != askLadder.end(); ++it) {
+        cout << it->first << " : " << it->second.totalQuantity << "\n";
     }
 }
+
