@@ -1,79 +1,51 @@
 #include "order_book.hpp"
+#include <iostream>
 
-void OrderBook::addOrder(const Order& order) {
-    if (order.side == BUY) {
-        bidLadder[order.price].addOrder(order);
-        orderIdMap[order.id] = prev(bidLadder[order.price].orders.end());
-    } else {
-        askLadder[order.price].addOrder(order);
-        orderIdMap[order.id] = prev(askLadder[order.price].orders.end());
-    }
+std::list<Order>::iterator OrderBook::addOrder(const Order &order) {
+  PriceLevel &level = (order.side == Side::BUY) ? bidLadder[order.price]
+                                                : askLadder[order.price];
+  level.addOrder(order);
+  auto it = std::prev(level.orders.end());
+  sequenceToIterator[order.sequence] = it;
+  return it;
 }
 
-void OrderBook::removeOrder(int orderId) {
-    auto it = orderIdMap.find(orderId);
-    if (it == orderIdMap.end()) return;
+bool OrderBook::removeOrder(Sequence sequence) {
+  auto f = sequenceToIterator.find(sequence);
+  if (f == sequenceToIterator.end()) {
+    return false;
+  }
 
-    auto& listIt = it->second;
-    double price = listIt->price;
-    if (listIt->side == BUY) {
-        PriceLevel& level = bidLadder[price];
-        level.removeOrder(listIt);
-        if (level.orders.empty()) bidLadder.erase(price);
-    } else {
-        PriceLevel& level = askLadder[price];
-        level.removeOrder(listIt);
-        if (level.orders.empty()) askLadder.erase(price);
-    }
-    orderIdMap.erase(orderId);
+  auto &it = f->second;
+  ClientOrderKey &client = it->clientOrderKey;
+  double price = it->price;
+
+  if (it->side == Side::BUY) {
+    PriceLevel &level = bidLadder[price];
+    level.removeOrder(it);
+    if (level.orders.empty())
+      bidLadder.erase(price);
+  } else {
+    PriceLevel &level = askLadder[price];
+    level.removeOrder(it);
+    if (level.orders.empty())
+      askLadder.erase(price);
+  }
+
+  clientToSequence.erase(client);
+  // TODO: Deliver event to client about cancellation of order
+  sequenceToIterator.erase(sequence);
+  return true;
 }
 
-const Order& getRestingOrder(const Order& a, const Order& b) {
-    if (a.timestamp == b.timestamp) {
-        if (a.sequence < b.sequence) {
-            return a;
-        }
-        return b;
-    } else if (a.timestamp < b.timestamp) {
-        return a;
-    }
-    return b;
+void OrderBook::printBook() const {
+  std::cout << "Bids:\n";
+  for (auto it = bidLadder.rbegin(); it != bidLadder.rend(); ++it) {
+    std::cout << it->first << " : " << it->second.totalQuantity << "\n";
+  }
+
+  std::cout << "\nAsks:\n";
+  for (auto it = askLadder.begin(); it != askLadder.end(); ++it) {
+    std::cout << it->first << " : " << it->second.totalQuantity << "\n";
+  }
 }
-
-
-void OrderBook::matchOrders() {
-    while (!bidLadder.empty() && !askLadder.empty() &&
-           bidLadder.begin()->first >= askLadder.begin()->first) {
-        PriceLevel& bidLevel = bidLadder.begin()->second;
-        PriceLevel& askLevel = askLadder.begin()->second;
-        Order& bestBid = bidLevel.orders.front();
-        Order& bestAsk = askLevel.orders.front();
-
-        long executionSize = min(bestBid.quantity, bestAsk.quantity);
-        double executionPrice = getRestingOrder(bestBid, bestAsk).price;
-
-        bestBid.quantity -= executionSize;
-        bestAsk.quantity -= executionSize;
-        bidLevel.totalQuantity -= executionSize;
-        askLevel.totalQuantity -= executionSize;
-
-        // cout << "Trade: " << executionSize << " @ " << executionPrice
-        //      << " (Bid " << bestBid.id << " / Ask " << bestAsk.id << ")\n";
-
-        if (bestBid.quantity == 0) removeOrder(bestBid.id);
-        if (bestAsk.quantity == 0) removeOrder(bestAsk.id);
-    }
-}
-
-void OrderBook::printBook() {
-    cout << "Bids:\n";
-    for (auto it = bidLadder.rbegin(); it != bidLadder.rend(); ++it) {
-        cout << it->first << " : " << it->second.totalQuantity << "\n";
-    }
-
-    cout << "\nAsks:\n";
-    for (auto it = askLadder.begin(); it != askLadder.end(); ++it) {
-        cout << it->first << " : " << it->second.totalQuantity << "\n";
-    }
-}
-
