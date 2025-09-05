@@ -7,14 +7,13 @@ const app = express();
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: "http://localhost:3000", // your React app origin
+    origin: "http://localhost:3000",
   })
 );
 
 const HOST = "127.0.0.1";
 const PORT = 9999;
 
-// Keep a single TCP connection open
 const client = new net.Socket();
 client.connect(PORT, HOST, () => {
   console.log("Connected to C++ TCP server");
@@ -24,7 +23,6 @@ client.on("error", (err) => {
   console.error("TCP Error:", err);
 });
 
-// Endpoint to receive orders from React
 app.post("/send-order", (req, res) => {
   const { side, quantity, price } = req.body;
 

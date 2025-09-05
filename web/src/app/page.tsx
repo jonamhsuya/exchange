@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function Home() {
   const [price, setPrice] = useState(0.0);
   const [quantity, setQuantity] = useState(100);
-  const [side, setSide] = useState(0); // 0 = BUY, 1 = SELL
+  const [side, setSide] = useState(0);
 
   const onSubmit = async () => {
     try {
