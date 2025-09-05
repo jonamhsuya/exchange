@@ -43,14 +43,12 @@ void Server::start() {
 
     recv_buffer.insert(recv_buffer.end(), temp, temp + n);
 
-    // Parse complete messages
     while (recv_buffer.size() >= sizeof(OrderMessage)) {
       OrderMessage msg;
       memcpy(&msg, recv_buffer.data(), sizeof(OrderMessage));
       recv_buffer.erase(recv_buffer.begin(),
                         recv_buffer.begin() + sizeof(OrderMessage));
 
-      // Optional: checksum
       uint8_t checksum = 0;
       for (int i = 0; i < 15; i++) {
         checksum ^= ((uint8_t *)&msg)[i];

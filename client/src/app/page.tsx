@@ -9,7 +9,7 @@ export default function Home() {
 
   const onSubmit = async () => {
     try {
-      const res = await fetch("http://localhost:3001/send-order", {
+      const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ side, quantity, price }),
