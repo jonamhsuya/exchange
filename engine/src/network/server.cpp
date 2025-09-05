@@ -1,5 +1,6 @@
 #include "server.hpp"
 #include "../message.hpp"
+#include <cstring>
 #include <iostream>
 #include <netinet/in.h>
 #include <sys/socket.h>
