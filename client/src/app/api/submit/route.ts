@@ -43,10 +43,14 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Error sending order:", err);
+    let message = "Unknown error";
+    if (err instanceof Error) {
+      message = err.message;
+    }
     return NextResponse.json(
-      { success: false, error: err.message },
+      { success: false, error: message },
       { status: 500 }
     );
   }
