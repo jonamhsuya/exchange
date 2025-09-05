@@ -3,7 +3,7 @@
 #include <random>
 #include <vector>
 
-#include "matching_engine.hpp"
+#include "../src/matching_engine.hpp"
 
 using namespace std;
 using namespace chrono;
@@ -30,8 +30,8 @@ int main() {
   engine.book().printBook();
 
   cout << "\n===== Testing Cancellations =====\n";
-  engine.cancelOrder(1, 1); // Cancel a remaining buy order
-  engine.cancelOrder(2, 3); // Cancel a sell order
+  engine.cancelOrder(1, 1);
+  engine.cancelOrder(2, 3);
 
   cout << "\n===== Order Book After Cancellations =====\n";
   engine.book().printBook();

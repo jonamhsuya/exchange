@@ -11,7 +11,7 @@ public:
   // std::function<void(const Cancel &)> onCancel;
   // std::function<void(const Reject &)> onReject;
 
-  MatchingEngine();
+  MatchingEngine() : sequence_(0) {}
 
   void submitOrder(uint64_t clientId, uint64_t clientOrderId, Side side, Price price, Quantity quantity);
   bool cancelOrder(uint64_t clientId, uint64_t clientOrderId);

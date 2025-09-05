@@ -1,0 +1,9 @@
+# Compiled object files
+*.o
+
+# Executables
+main
+testapp
+
+# Build directories
+build/

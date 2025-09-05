@@ -1,7 +1,5 @@
 #include "matching_engine.hpp"
 
-MatchingEngine::MatchingEngine() : sequence_(0) {}
-
 void MatchingEngine::submitOrder(uint64_t clientId, uint64_t clientOrderId,
                                  Side side, Price price, Quantity quantity) {
   ClientOrderKey clientOrderKey = ClientOrderKey(clientId, clientOrderId);
