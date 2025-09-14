@@ -1,6 +1,8 @@
 #include "network/server.hpp"
 
 int main() {
-    Server server;
+    MatchingEngine engine;
+    Server server(engine, 9999);
+    engine.setServer(&server);
     server.start();
 }

@@ -3,7 +3,7 @@
 #include <random>
 #include <vector>
 
-#include "../src/matching_engine.hpp"
+#include "matching_engine.hpp"
 
 using namespace std;
 using namespace chrono;
@@ -14,17 +14,17 @@ int main() {
   MatchingEngine engine;
 
   cout << "===== Adding Orders =====\n";
-  engine.submitOrder(1, 1, Side::BUY, 100, 10);
-  engine.submitOrder(1, 2, Side::BUY, 101, 5);
-  engine.submitOrder(2, 3, Side::SELL, 102, 7);
-  engine.submitOrder(2, 4, Side::SELL, 99, 3);
+  engine.submitOrder(1, 1, Side::BUY, 10, 100);
+  engine.submitOrder(1, 2, Side::BUY, 5, 101);
+  engine.submitOrder(2, 3, Side::SELL, 7, 102);
+  engine.submitOrder(2, 4, Side::SELL, 3, 99);
 
   cout << "\n===== Order Book After Submissions =====\n";
   engine.book().printBook();
 
   cout << "\n===== Adding More Orders =====\n";
-  engine.submitOrder(3, 5, Side::SELL, 101, 10);
-  engine.submitOrder(1, 6, Side::BUY, 101, 7);
+  engine.submitOrder(3, 5, Side::SELL, 10, 101);
+  engine.submitOrder(1, 6, Side::BUY, 7, 101);
 
   cout << "\n===== Order Book After More Submissions =====\n";
   engine.book().printBook();
@@ -66,8 +66,6 @@ void stressTests() {
 
   auto end = high_resolution_clock::now();
   auto totalDuration = duration_cast<nanoseconds>(end - start).count();
-
-  // engine.book().printBook();
 
   cout << "Total duration for " << numOrders << " orders: " << totalDuration
        << " ns\n";

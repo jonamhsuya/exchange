@@ -25,11 +25,12 @@ struct PriceLevel {
 struct OrderBook {
   std::map<Price, PriceLevel, std::greater<Price>> bidLadder;
   std::map<Price, PriceLevel, std::less<Price>> askLadder;
-  std::unordered_map<ClientOrderKey, Sequence, ClientOrderKeyHash> clientToSequence;
+  std::unordered_map<ClientOrderKey, Sequence, ClientOrderKeyHash>
+      clientToSequence;
   std::unordered_map<Sequence, std::list<Order>::iterator> sequenceToIterator;
 
-  std::list<Order>::iterator addOrder(const Order &order);
-  bool removeOrder(Sequence orderId);
+  std::list<Order>::iterator addOrder(Order &&order);
+  Order removeOrder(Sequence orderId);
   void printBook() const;
 
   Price getBestBid() const {

@@ -1,25 +1,29 @@
 #include "matching_engine.hpp"
+#include "network/server.hpp"
 
-void MatchingEngine::submitOrder(uint64_t clientId, uint64_t clientOrderId,
-                                 Side side, Price price, Quantity quantity) {
+void MatchingEngine::submitOrder(uint32_t clientId, uint32_t clientOrderId,
+                                 Side side, Quantity quantity, Price price) {
   ClientOrderKey clientOrderKey = ClientOrderKey(clientId, clientOrderId);
   sequence_.fetch_add(1, std::memory_order_relaxed);
-  Order order = Order(sequence_, clientOrderKey, side, price, quantity);
+  Order order = Order(sequence_, clientOrderKey, side, quantity, price);
   orderBook_.clientToSequence[clientOrderKey] = sequence_;
-  orderBook_.addOrder(order);
+  orderBook_.addOrder(std::move(order));
+  server_->onAccept(order);
   if ((order.side == Side::BUY && order.price >= orderBook_.getBestAsk()) ||
       (order.side == Side::SELL && order.price <= orderBook_.getBestBid())) {
+    // A bid crossed the best ask, or vice versa; match the orders
     match();
   }
 }
 
-bool MatchingEngine::cancelOrder(uint64_t clientId, uint64_t clientOrderId) {
+bool MatchingEngine::cancelOrder(uint32_t clientId, uint32_t clientOrderId) {
   ClientOrderKey clientOrderKey = ClientOrderKey(clientId, clientOrderId);
   auto it = orderBook_.clientToSequence.find(clientOrderKey);
   if (it == orderBook_.clientToSequence.end()) {
     return false;
   }
-  orderBook_.removeOrder(it->second);
+  Order order = orderBook_.removeOrder(it->second);
+  server_->onCancel(order);
   return true;
 }
 
@@ -42,12 +46,25 @@ void MatchingEngine::match() {
     bidLevel.totalQuantity -= executionSize;
     askLevel.totalQuantity -= executionSize;
 
+    // Construct new orders to represent the executed trades
+    Order finalBestBid(bestBid.sequence, bestBid.clientOrderKey, bestBid.side,
+                       executionSize, executionPrice);
+    Order finalBestAsk(bestAsk.sequence, bestAsk.clientOrderKey, bestAsk.side,
+                       executionSize, executionPrice);
+
     if (bestBid.quantity == 0) {
       orderBook_.removeOrder(bestBid.sequence);
     }
     if (bestAsk.quantity == 0) {
       orderBook_.removeOrder(bestAsk.sequence);
     }
+
+    std::cout << finalBestBid.clientOrderKey.clientOrderId << " and "
+              << finalBestAsk.clientOrderKey.clientOrderId << " traded "
+              << executionSize << " at " << executionPrice << "\n";
+
+    server_->onTrade(finalBestBid);
+    server_->onTrade(finalBestAsk);
   }
 }
 

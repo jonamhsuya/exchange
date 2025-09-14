@@ -1,22 +1,20 @@
 #include "order_book.hpp"
+#include <iomanip>
 #include <iostream>
 
-std::list<Order>::iterator OrderBook::addOrder(const Order &order) {
+std::list<Order>::iterator OrderBook::addOrder(Order &&order) {
   PriceLevel &level = (order.side == Side::BUY) ? bidLadder[order.price]
                                                 : askLadder[order.price];
-  level.addOrder(order);
+  level.addOrder(std::move(order));
   auto it = std::prev(level.orders.end());
   sequenceToIterator[order.sequence] = it;
   return it;
 }
 
-bool OrderBook::removeOrder(Sequence sequence) {
-  auto f = sequenceToIterator.find(sequence);
-  if (f == sequenceToIterator.end()) {
-    return false;
-  }
+Order OrderBook::removeOrder(Sequence sequence) {
+  auto &it = sequenceToIterator[sequence];
+  Order order = *it;
 
-  auto &it = f->second;
   ClientOrderKey &client = it->clientOrderKey;
   double price = it->price;
 
@@ -33,19 +31,37 @@ bool OrderBook::removeOrder(Sequence sequence) {
   }
 
   clientToSequence.erase(client);
-  // TODO: Deliver event to client about cancellation of order
   sequenceToIterator.erase(sequence);
-  return true;
+  return order;
 }
 
 void OrderBook::printBook() const {
-  std::cout << "Bids:\n";
+  constexpr int widthPrice = 12;
+  constexpr int widthQty = 15;
+
+  std::cout << "===== ORDER BOOK =====\n\n";
+
+  std::cout << " BIDS (Buy Orders):\n";
+  std::cout << std::left << std::setw(widthPrice) << "Price"
+            << std::setw(widthQty) << "Total Quantity" << "\n";
+  std::cout << std::string(widthPrice + widthQty, '-') << "\n";
   for (auto it = bidLadder.rbegin(); it != bidLadder.rend(); ++it) {
-    std::cout << it->first << " : " << it->second.totalQuantity << "\n";
+    std::cout << std::left << std::setw(widthPrice)
+              << it->first / 100.0
+              << std::setw(widthQty) << it->second.totalQuantity << "\n";
   }
 
-  std::cout << "\nAsks:\n";
+  std::cout << "\n";
+
+  std::cout << " ASKS (Sell Orders):\n";
+  std::cout << std::left << std::setw(widthPrice) << "Price"
+            << std::setw(widthQty) << "Total Quantity" << "\n";
+  std::cout << std::string(widthPrice + widthQty, '-') << "\n";
   for (auto it = askLadder.begin(); it != askLadder.end(); ++it) {
-    std::cout << it->first << " : " << it->second.totalQuantity << "\n";
+    std::cout << std::left << std::setw(widthPrice)
+              << it->first / 100.0
+              << std::setw(widthQty) << it->second.totalQuantity << "\n";
   }
+
+  std::cout << "\n======================\n";
 }

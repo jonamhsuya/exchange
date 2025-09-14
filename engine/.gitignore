@@ -7,3 +7,6 @@ testapp
 
 # Build directories
 build/
+
+# Libraries
+libs/

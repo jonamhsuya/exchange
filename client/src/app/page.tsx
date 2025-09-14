@@ -1,23 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { buildRequest } from "./lib/buildRequest";
+import { decodeResponse } from "./lib/decodeResponse";
 
 export default function Home() {
+  const [clientId, setClientId] = useState<number | null>(null);
   const [price, setPrice] = useState(0.0);
   const [quantity, setQuantity] = useState(100);
   const [side, setSide] = useState(0);
 
-  const onSubmit = async () => {
-    try {
-      const res = await fetch("/api/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ side, quantity, price }),
-      });
-      const data = await res.json();
-      console.log(data);
-    } catch (err) {
-      console.error("Error sending order:", err);
+  const ws = useRef<WebSocket | null>(null);
+
+  const SERVER_URL = "localhost:9999";
+
+  useEffect(() => {
+    ws.current = new WebSocket("ws://" + SERVER_URL);
+
+    ws.current.onopen = () => {
+      console.log("WebSocket connected");
+    };
+
+    ws.current.onmessage = async (event: MessageEvent<Blob>) => {
+      const response = decodeResponse(await event.data.arrayBuffer());
+      console.log("Message from server:", response);
+      if (response?.kind === "idAssignment") {
+        setClientId(response.clientId);
+      }
+      console.log(Date.now());
+    };
+
+    ws.current.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
+
+    ws.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    return () => {
+      ws.current?.close();
+    };
+  }, []);
+
+  const onSubmit = () => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      const orderId = Math.floor(Math.random() * 0xffffffff);
+      console.log("Generated orderId:", orderId);
+      const order = buildRequest(clientId ?? 0, orderId, side, quantity, price);
+      ws.current.send(order);
+      console.log("Sent order:", order);
+      console.log(Date.now());
+    } else {
+      console.error("WebSocket is not connected");
     }
   };
 

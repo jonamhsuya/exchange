@@ -2,14 +2,15 @@
 #include "types.hpp"
 #include <chrono>
 #include <functional>
+#include <iostream>
 
 struct ClientOrderKey {
-  uint64_t clientId;
-  uint64_t clientOrderId;
+  uint32_t clientId;      // The ID of the client that sent the order
+  uint32_t clientOrderId; // The client-assigned ID for the order
 
   ClientOrderKey() = default;
 
-  ClientOrderKey(uint64_t clientId_, uint64_t clientOrderId_)
+  ClientOrderKey(uint32_t clientId_, uint32_t clientOrderId_)
       : clientId(clientId_), clientOrderId(clientOrderId_) {}
 
   bool operator==(const ClientOrderKey &other) const noexcept {
@@ -19,8 +20,8 @@ struct ClientOrderKey {
 
 struct ClientOrderKeyHash {
   std::size_t operator()(const ClientOrderKey &key) const noexcept {
-    std::size_t h1 = std::hash<uint64_t>{}(key.clientId);
-    std::size_t h2 = std::hash<uint64_t>{}(key.clientOrderId);
+    std::size_t h1 = std::hash<uint32_t>{}(key.clientId);
+    std::size_t h2 = std::hash<uint32_t>{}(key.clientOrderId);
     std::size_t seed = h1;
     seed ^= h2 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     return seed;
@@ -35,14 +36,14 @@ struct Order {
                      // ordering among orders
   ClientOrderKey clientOrderKey; // Contains the client ID and client order ID
   Side side;                     // Whether the order is a buy or a sell
+  Quantity quantity;             // The fixed integer quantity of the order
   Price price; // The price given for the underlying asset in integer ticks
-  Quantity quantity; // The fixed integer quantity of the order
   std::chrono::steady_clock::time_point
       timestamp; // The exact timestamp when the order was received
 
-  Order(Sequence sequence_, ClientOrderKey &clientOrderKey_, Side side_,
-        Price price_, Quantity quantity_)
+  Order(Sequence sequence_, const ClientOrderKey &clientOrderKey_, Side side_,
+        Quantity quantity_, Price price_)
       : sequence(sequence_), clientOrderKey(clientOrderKey_), side(side_),
-        price(price_), quantity(quantity_),
+        quantity(quantity_), price(price_),
         timestamp(std::chrono::steady_clock::now()) {}
 };
