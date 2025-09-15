@@ -8,7 +8,7 @@ void Server::start() {
   ws_.init_asio();
 
   ws_.set_open_handler([this](connection_hdl hdl) {
-    std::lock_guard<std::mutex> lock(mtx_);
+    std::lock_guard<std::mutex> lock(client_mtx_);
     uint32_t clientId =
         std::uniform_int_distribution<uint32_t>(1, 0xFFFFFFFF)(gen_);
     while (clients_.find(clientId) != clients_.end()) {
@@ -33,7 +33,7 @@ void Server::start() {
   });
 
   ws_.set_close_handler([this](connection_hdl hdl) {
-    std::lock_guard<std::mutex> lock(mtx_);
+    std::lock_guard<std::mutex> lock(client_mtx_);
 
     for (auto it = clients_.begin(); it != clients_.end();) {
       if (!it->second.owner_before(hdl) && !hdl.owner_before(it->second)) {
@@ -61,7 +61,7 @@ void Server::start() {
 void Server::stop() {
   ws_.stop_listening();
 
-  std::lock_guard<std::mutex> lock(mtx_);
+  std::lock_guard<std::mutex> lock(client_mtx_);
   for (auto &[clientId, hdl] : clients_) {
     websocketpp::lib::error_code ec;
     ws_.close(hdl, websocketpp::close::status::going_away, "", ec);
@@ -98,9 +98,11 @@ void Server::handleClient(const std::string &payload) {
             << " quantity=" << msg.quantity << " price=" << msg.price
             << " checksum=" << (int)msg.checksum << "\n\n";
 
-  engine_.submitOrder(msg.clientId, msg.clientOrderId, msg.side, msg.quantity,
-                      msg.price);
-
+  {
+    std::lock_guard<std::mutex> lock(engine_mtx_);
+    engine_.submitOrder(msg.clientId, msg.clientOrderId, msg.side, msg.quantity,
+                        msg.price);
+  }
   std::cout << "\nOrder book:\n";
   engine_.book().printBook();
   std::cout << "\n";
@@ -117,7 +119,7 @@ void Server::onAccept(Order &order) {
 
   connection_hdl hdl;
   {
-    std::lock_guard<std::mutex> lock(mtx_);
+    std::lock_guard<std::mutex> lock(client_mtx_);
     auto it = clients_.find(order.clientOrderKey.clientId);
     if (it == clients_.end()) {
       std::cerr << "Client ID not found: " << order.clientOrderKey.clientId
@@ -133,6 +135,7 @@ void Server::onAccept(Order &order) {
   if (ec) {
     std::cerr << "Error sending accept: " << ec.message() << "\n";
   }
+  sendOrderBook();
 }
 
 void Server::onCancel(Order &order) {
@@ -146,7 +149,7 @@ void Server::onCancel(Order &order) {
 
   connection_hdl hdl;
   {
-    std::lock_guard<std::mutex> lock(mtx_);
+    std::lock_guard<std::mutex> lock(client_mtx_);
     auto it = clients_.find(order.clientOrderKey.clientId);
     if (it == clients_.end()) {
       std::cerr << "Client ID not found: " << order.clientOrderKey.clientId
@@ -162,6 +165,7 @@ void Server::onCancel(Order &order) {
   if (ec) {
     std::cerr << "Error sending cancel: " << ec.message() << "\n";
   }
+  sendOrderBook();
 }
 
 void Server::onTrade(Order &order) {
@@ -176,7 +180,7 @@ void Server::onTrade(Order &order) {
 
   connection_hdl hdl;
   {
-    std::lock_guard<std::mutex> lock(mtx_);
+    std::lock_guard<std::mutex> lock(client_mtx_);
     auto it = clients_.find(order.clientOrderKey.clientId);
     if (it == clients_.end()) {
       std::cerr << "Client ID not found: " << order.clientOrderKey.clientId
@@ -195,5 +199,20 @@ void Server::onTrade(Order &order) {
     }
   } catch (const websocketpp::exception &e) {
     std::cerr << "WebSocket exception: " << e.what() << "\n";
+  }
+  sendOrderBook();
+}
+
+void Server::sendOrderBook() {
+  std::cout << "Sending order book to all clients\n";
+  std::string bookStr = engine_.book().serializeBook();
+  std::lock_guard<std::mutex> lock(client_mtx_);
+  for (const auto &[clientId, hdl] : clients_) {
+    websocketpp::lib::error_code ec;
+    ws_.send(hdl, bookStr, websocketpp::frame::opcode::text, ec);
+    if (ec) {
+      std::cerr << "Error sending order book to client " << clientId << ": "
+                << ec.message() << "\n";
+    }
   }
 }

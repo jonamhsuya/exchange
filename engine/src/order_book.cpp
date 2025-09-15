@@ -1,6 +1,7 @@
 #include "order_book.hpp"
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 std::list<Order>::iterator OrderBook::addOrder(Order &&order) {
   PriceLevel &level = (order.side == Side::BUY) ? bidLadder[order.price]
@@ -65,3 +66,30 @@ void OrderBook::printBook() const {
 
   std::cout << "\n======================\n";
 }
+
+std::string OrderBook::serializeBook() const {
+  std::ostringstream oss;
+  oss << "{";
+
+  oss << "\"bids\":[";
+  bool firstBid = true;
+  for (auto it = bidLadder.rbegin(); it != bidLadder.rend(); ++it) {
+    if (!firstBid) oss << ",";
+    oss << "[" << (it->first / 100.0) << "," << it->second.totalQuantity << "]";
+    firstBid = false;
+  }
+  oss << "],";
+
+  oss << "\"asks\":[";
+  bool firstAsk = true;
+  for (auto it = askLadder.begin(); it != askLadder.end(); ++it) {
+    if (!firstAsk) oss << ",";
+    oss << "[" << (it->first / 100.0) << "," << it->second.totalQuantity << "]";
+    firstAsk = false;
+  }
+  oss << "]";
+
+  oss << "}";
+  return oss.str();
+}
+

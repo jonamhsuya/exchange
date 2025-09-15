@@ -21,6 +21,7 @@ public:
   void onAccept(Order &order);
   void onCancel(Order &order);
   void onTrade(Order &order);
+  void sendOrderBook();
 
 private:
   using ws_server = websocketpp::server<websocketpp::config::asio>;
@@ -33,5 +34,6 @@ private:
   ws_server ws_;
   std::mt19937 gen_{std::random_device{}()};
   std::map<uint32_t, connection_hdl> clients_;
-  std::mutex mtx_;
+  std::mutex client_mtx_;
+  std::mutex engine_mtx_;
 };

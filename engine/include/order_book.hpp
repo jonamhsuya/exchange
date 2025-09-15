@@ -32,6 +32,7 @@ struct OrderBook {
   std::list<Order>::iterator addOrder(Order &&order);
   Order removeOrder(Sequence orderId);
   void printBook() const;
+  std::string serializeBook() const;
 
   Price getBestBid() const {
     return bidLadder.empty() ? Price{} : bidLadder.begin()->first;
