@@ -60,8 +60,7 @@ export default function Home() {
     <main className="bg-gray-900 min-h-screen text-white flex flex-col">
       <nav className="flex items-center justify-center h-[15vh] bg-gray-800 shadow-md gap-4 px-4">
         <p className="text-5xl sm:text-6xl">📈</p>
-        <p className="text-4xl sm:text-5xl font-serif font-bold">Exchange</p>
-        <p className="text-5xl sm:text-6xl">📉</p>
+        <p className="text-4xl sm:text-5xl font-serif font-bold">&nbsp;Exchange</p>
       </nav>
 
       <div className="flex-1 flex flex-col items-center justify-start p-6 sm:p-12 gap-8 sm:gap-12 w-full">
