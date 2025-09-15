@@ -60,7 +60,7 @@ export default function Home() {
     <main className="bg-gray-900 min-h-screen text-white flex flex-col">
       <nav className="flex items-center justify-center h-[15vh] bg-gray-800 shadow-md gap-6">
         <p className="text-7xl">📈</p>
-        <p className="text-6xl font-serif font-bold">Exchange</p>
+        <p className="text-6xl font-serif font-bold">&nbsp;Exchange&nbsp;</p>
         <p className="text-7xl">📉</p>
       </nav>
 
