@@ -10,3 +10,6 @@ build/
 
 # Libraries
 libs/
+
+# Security certificates
+certificates/

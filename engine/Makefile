@@ -3,9 +3,13 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -O2 \
            -Iinclude \
            -Ilibs/boost_1_86_0 \
            -I/opt/homebrew/opt/websocketpp/include \
+           -I/opt/homebrew/opt/openssl/include \
            -pthread
 
-LDFLAGS = -Llibs/boost_1_86_0/install/lib -Wl,-rpath,libs/boost_1_86_0/install/lib -lboost_system -lpthread
+LDFLAGS = -Llibs/boost_1_86_0/install/lib \
+          -Wl,-rpath,libs/boost_1_86_0/install/lib \
+          -L/opt/homebrew/opt/openssl/lib \
+          -lboost_system -lssl -lcrypto -lpthread
 
 SRC_DIR = src
 OBJ_DIR = build

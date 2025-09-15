@@ -4,8 +4,29 @@
 #include <iostream>
 #include <random>
 
+std::shared_ptr<boost::asio::ssl::context> Server::on_tls_init(connection_hdl) {
+  auto ctx = std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12);
+
+  try {
+    ctx->set_options(
+        boost::asio::ssl::context::default_workarounds |
+        boost::asio::ssl::context::no_sslv2 |
+        boost::asio::ssl::context::no_sslv3 |
+        boost::asio::ssl::context::single_dh_use);
+
+    ctx->use_certificate_chain_file("../certificates/cert.pem");
+    ctx->use_private_key_file("../certificates/key.pem", boost::asio::ssl::context::pem);
+  } catch (std::exception &e) {
+    std::cerr << "Error in TLS initialization: " << e.what() << std::endl;
+  }
+
+  return ctx;
+}
+
 void Server::start() {
   ws_.init_asio();
+
+  ws_.set_tls_init_handler(bind(&Server::on_tls_init, this, std::placeholders::_1));
 
   ws_.set_open_handler([this](connection_hdl hdl) {
     uint32_t clientId =
@@ -18,7 +39,7 @@ void Server::start() {
       clients_[clientId] = hdl;
       std::cout << "New WebSocket client connected\n";
     }
-    
+
     IdAssignment idAssignment{clientId, EventType::ID_ASSIGNMENT, 0};
     uint8_t checksum = 0;
     for (int i = 0; i < (int)sizeof(idAssignment) - 1; i++) {
@@ -45,7 +66,6 @@ void Server::start() {
         ++it;
       }
     }
-
     std::cout << "Client disconnected\n";
   });
 

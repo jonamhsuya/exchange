@@ -24,7 +24,7 @@ export default function Home() {
   useEffect(() => {
     if (ws.current) return;
 
-    ws.current = new WebSocket("ws://" + SERVER_URL);
+    ws.current = new WebSocket("wss://" + SERVER_URL);
 
     ws.current.onopen = () => console.log("WebSocket connected");
 
