@@ -19,7 +19,7 @@ export default function Home() {
   const ws = useRef<WebSocket | null>(null);
   const ordersRef = useRef(orders);
   ordersRef.current = orders;
-  const SERVER_URL = "localhost:9999";
+  const SERVER_URL = "18.223.132.88:9999";
 
   useEffect(() => {
     if (ws.current) return;
