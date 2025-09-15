@@ -8,15 +8,17 @@ void Server::start() {
   ws_.init_asio();
 
   ws_.set_open_handler([this](connection_hdl hdl) {
-    std::lock_guard<std::mutex> lock(client_mtx_);
     uint32_t clientId =
         std::uniform_int_distribution<uint32_t>(1, 0xFFFFFFFF)(gen_);
-    while (clients_.find(clientId) != clients_.end()) {
-      clientId = std::uniform_int_distribution<uint32_t>(1, 0xFFFFFFFF)(gen_);
+    {
+      std::lock_guard<std::mutex> lock(client_mtx_);
+      while (clients_.find(clientId) != clients_.end()) {
+        clientId = std::uniform_int_distribution<uint32_t>(1, 0xFFFFFFFF)(gen_);
+      }
+      clients_[clientId] = hdl;
+      std::cout << "New WebSocket client connected\n";
     }
-    clients_[clientId] = hdl;
-    std::cout << "New WebSocket client connected\n";
-
+    
     IdAssignment idAssignment{clientId, EventType::ID_ASSIGNMENT, 0};
     uint8_t checksum = 0;
     for (int i = 0; i < (int)sizeof(idAssignment) - 1; i++) {
@@ -30,6 +32,7 @@ void Server::start() {
     if (ec) {
       std::cerr << "Error sending status: " << ec.message() << "\n";
     }
+    sendOrderBook();
   });
 
   ws_.set_close_handler([this](connection_hdl hdl) {
@@ -48,7 +51,7 @@ void Server::start() {
 
   ws_.set_message_handler(
       [this](connection_hdl hdl, ws_server::message_ptr msg) {
-        handleClient(msg->get_payload());
+        handleMessage(msg->get_payload());
       });
 
   ws_.listen(port_);
@@ -74,9 +77,37 @@ void Server::stop() {
   ws_.stop();
 }
 
-void Server::handleClient(const std::string &payload) {
-  if (payload.size() < sizeof(OrderMessage)) {
+void Server::handleMessage(const std::string &payload) {
+  if (payload.size() != sizeof(CancelMessage) &&
+      payload.size() != sizeof(OrderMessage)) {
     std::cout << "Invalid message size\n";
+    return;
+  }
+
+  if (payload.size() == sizeof(CancelMessage)) {
+    CancelMessage msg{};
+    memcpy(&msg, payload.data(), sizeof(CancelMessage));
+
+    uint8_t checksum = 0;
+    for (int i = 0; i < (int)sizeof(CancelMessage) - 1; i++) {
+      checksum ^= ((uint8_t *)&msg)[i];
+    }
+    if (checksum != msg.checksum) {
+      std::cout << "Checksum mismatch!\n";
+      return;
+    }
+
+    std::cout << "\nReceived cancel: clientId=" << msg.clientId
+              << " clientOrderId=" << msg.clientOrderId
+              << " checksum=" << (int)msg.checksum << "\n\n";
+
+    {
+      std::lock_guard<std::mutex> lock(engine_mtx_);
+      engine_.cancelOrder(msg.clientId, msg.clientOrderId);
+    }
+    std::cout << "\nOrder book:\n";
+    engine_.book().printBook();
+    std::cout << "\n";
     return;
   }
 

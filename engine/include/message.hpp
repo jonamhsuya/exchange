@@ -14,6 +14,12 @@ struct OrderMessage {
   uint8_t checksum; // A simple checksum for validating message integrity
 };
 
+struct CancelMessage {
+  OrderId clientId;      // The ID of the client that sent the order
+  OrderId clientOrderId; // The client-assigned ID for the order
+  uint8_t checksum;      // A simple checksum for validating message integrity
+};
+
 /**
  * Denotes the event type of a particular event message.
  */

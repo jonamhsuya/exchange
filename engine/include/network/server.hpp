@@ -27,7 +27,7 @@ private:
   using ws_server = websocketpp::server<websocketpp::config::asio>;
   using connection_hdl = websocketpp::connection_hdl;
 
-  void handleClient(const std::string &payload);
+  void handleMessage(const std::string &payload);
 
   MatchingEngine &engine_;
   int port_;
