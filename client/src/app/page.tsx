@@ -19,7 +19,7 @@ export default function Home() {
   const ws = useRef<WebSocket | null>(null);
   const ordersRef = useRef(orders);
   ordersRef.current = orders;
-  const SERVER_URL = "18.223.132.88:9999";
+  const SERVER_URL = "server.ayushmanoj.com:9999";
 
   useEffect(() => {
     if (ws.current) return;
@@ -137,7 +137,7 @@ export default function Home() {
         return newOrders;
       });
     } else {
-      alert("WebSocket not connected");
+      alert("Server is not connected.");
     }
   };
 
@@ -152,7 +152,7 @@ export default function Home() {
       const order = buildCancelRequest(clientId ?? 0, orderId);
       ws.current.send(order);
     } else {
-      alert("WebSocket not connected");
+      alert("Server is not connected.");
     }
   };
 
