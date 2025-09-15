@@ -1,4 +1,4 @@
-#include "network/server.hpp"
+#include "server.hpp"
 #include <algorithm>
 #include <cstring>
 #include <iostream>
