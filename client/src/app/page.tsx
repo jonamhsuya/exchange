@@ -58,20 +58,20 @@ export default function Home() {
 
   return (
     <main className="bg-gray-900 min-h-screen text-white flex flex-col">
-      <nav className="flex items-center justify-center h-[15vh] bg-gray-800 shadow-md gap-6">
-        <p className="text-7xl">📈</p>
-        <p className="text-6xl font-serif font-bold">&nbsp;Exchange&nbsp;</p>
-        <p className="text-7xl">📉</p>
+      <nav className="flex items-center justify-center h-[15vh] bg-gray-800 shadow-md gap-4 px-4">
+        <p className="text-5xl sm:text-6xl">📈</p>
+        <p className="text-4xl sm:text-5xl font-serif font-bold">Exchange</p>
+        <p className="text-5xl sm:text-6xl">📉</p>
       </nav>
 
-      <div className="flex-1 flex flex-col items-center justify-start p-12 gap-12">
-        <div className="w-full max-w-6xl">
+      <div className="flex-1 flex flex-col items-center justify-start p-6 sm:p-12 gap-8 sm:gap-12 w-full">
+        <div className="w-full max-w-6xl px-2 sm:px-0">
           <OrderBook bids={bids} asks={asks} />
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-12 w-full max-w-5xl justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <label className="text-2xl font-bold">Price</label>
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-12 w-full max-w-5xl justify-center px-2 sm:px-0">
+          <div className="flex flex-col items-center gap-2 w-full lg:w-auto">
+            <label className="text-lg sm:text-2xl font-bold">Price</label>
             <input
               type="number"
               step="0.01"
@@ -89,13 +89,13 @@ export default function Home() {
                   }
                 }
               }}
-              className="w-52 p-4 rounded-lg border border-gray-600 bg-gray-800 text-white text-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition-all"
+              className="w-full lg:w-52 p-3 sm:p-4 rounded-lg border border-gray-600 bg-gray-800 text-white text-lg sm:text-xl focus:outline-none focus:ring-2 focus:ring-green-400 transition-all"
               placeholder="Price"
             />
           </div>
 
-          <div className="flex flex-col items-center gap-4">
-            <label className="text-2xl font-bold">Quantity</label>
+          <div className="flex flex-col items-center gap-2 w-full lg:w-auto">
+            <label className="text-lg sm:text-2xl font-bold">Quantity</label>
             <input
               type="number"
               step="1"
@@ -110,17 +110,17 @@ export default function Home() {
                   if (value >= 0) setQuantity(Math.floor(value));
                 }
               }}
-              className="w-52 p-4 rounded-lg border border-gray-600 bg-gray-800 text-white text-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition-all"
+              className="w-full lg:w-52 p-3 sm:p-4 rounded-lg border border-gray-600 bg-gray-800 text-white text-lg sm:text-xl focus:outline-none focus:ring-2 focus:ring-green-400 transition-all"
               placeholder="Quantity"
             />
           </div>
 
-          <div className="flex flex-col items-center gap-4">
-            <label className="text-2xl font-bold">Side</label>
+          <div className="flex flex-col items-center gap-2 w-full lg:w-auto">
+            <label className="text-lg sm:text-2xl font-bold">Side</label>
             <select
               value={side}
               onChange={(e) => setSide(parseInt(e.target.value))}
-              className="w-52 p-4 rounded-lg border border-gray-600 bg-gray-800 text-white text-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition-all"
+              className="w-full lg:w-52 p-3 sm:p-4 rounded-lg border border-gray-600 bg-gray-800 text-white text-lg sm:text-xl focus:outline-none focus:ring-2 focus:ring-green-400 transition-all"
             >
               <option value={0}>BUY</option>
               <option value={1}>SELL</option>
@@ -130,7 +130,7 @@ export default function Home() {
 
         <button
           onClick={onSubmit}
-          className="mt-8 px-12 py-5 rounded-xl bg-green-500 text-black font-bold text-xl transition-all duration-300 transform hover:bg-green-600 hover:scale-110"
+          className="mt-6 w-full max-w-xs lg:max-w-sm px-6 py-3 rounded-xl bg-green-500 text-black font-bold text-lg transition-all duration-300 transform hover:bg-green-600 hover:scale-105"
         >
           Submit
         </button>
