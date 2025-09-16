@@ -2,10 +2,12 @@
 
 A high-performance trading exchange engine built in **C++** with a **React/Next.js frontend**. The system is designed for low-latency order handling, efficient order book management, and real-time updates over WebSockets.
 
+This application is currently deployed at [exchange.ayushmanoj.com](exchange.ayushmanoj.com). Feel free to check it out!
+
 ## Features
 
 - **C++ Matching Engine**
-  - Handles limit and market orders with millisecond-level latency.
+  - Handles limit and market orders with nanosecond-level latency.
   - Implements price-time priority matching.
   - Maintains a fast in-memory order book.
   - WebSocket++ server for client communication.
