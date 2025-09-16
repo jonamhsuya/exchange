@@ -36,7 +36,8 @@ A high-performance trading exchange engine built in **C++** with a **React/Next.
 
 ### Prerequisites
 - C++17 or newer
-- Boost (for WebSocket++)   
+- Boost
+- WebSocket++
 - React/Next.js (for frontend)  
 
 ### Build & Run (C++ Engine + WebSocket Server)
