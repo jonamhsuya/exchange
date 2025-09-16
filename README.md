@@ -22,10 +22,10 @@ A high-performance trading exchange engine built in **C++** with a **React/Next.
 ## Architecture
 
 ```
-+----------------+        +----------------+        +------------------+
-|   Frontend     | <----> |   WebSocket++  | <----> | Matching Engine   |
-|  (React/Next)  |        |   (C++ server) |        |   (C++ orderbook) |
-+----------------+        +----------------+        +------------------+
++----------------+        +----------------+        +-------------------+
+|    Frontend    | <----> |   WebSocket++  | <----> |  Matching Engine  |
+|  (React/Next)  |        |   (C++ server) |        |  (C++ orderbook)  |
++----------------+        +----------------+        +-------------------+
 ```
 
 - **Frontend** communicates with the backend via WebSockets.  
