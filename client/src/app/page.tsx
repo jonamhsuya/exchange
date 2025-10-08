@@ -6,6 +6,7 @@ import { buildCancelRequest } from "./lib/buildCancelRequest";
 import { decodeResponse } from "./lib/decodeResponse";
 import OrderBook from "./components/OrderBook";
 import OrderTable, { OrderData, OrderStatus } from "./components/OrderTable";
+import { Flip, ToastContainer, toast } from "react-toastify";
 
 export default function Home() {
   const [clientId, setClientId] = useState<number | null>(null);
@@ -52,7 +53,17 @@ export default function Home() {
               newOrders.set(response.orderId, { ...order, status: "ACCEPTED" });
             return newOrders;
           });
-          alert("Order accepted.");
+          toast.success("Order accepted.", {
+            position: "bottom-center",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+            transition: Flip,
+          });
           break;
         }
 
@@ -62,7 +73,17 @@ export default function Home() {
             newOrders.delete(response.orderId);
             return newOrders;
           });
-          alert("Order cancelled.");
+          toast.info("Order cancelled.", {
+            position: "bottom-center",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+            transition: Flip,
+          });
           break;
         }
 
@@ -90,10 +111,21 @@ export default function Home() {
             return newOrders;
           });
 
-          alert(
+          toast.success(
             `${response.quantity} shares ${
               order.side === 0 ? "bought" : "sold"
-            } at ${response.price}.`
+            } at ${response.price}.`,
+            {
+              position: "bottom-center",
+              autoClose: 2000,
+              hideProgressBar: false,
+              closeOnClick: false,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+              transition: Flip,
+            }
           );
 
           break;
@@ -111,8 +143,20 @@ export default function Home() {
   }, []);
 
   const onSubmit = () => {
-    if (price === null || quantity === null || quantity <= 0)
-      return alert("Enter a valid price and quantity.");
+    if (price === null || quantity === null || quantity <= 0) {
+      toast.error("Enter a valid price and quantity.", {
+        position: "bottom-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Flip,
+      });
+      return;
+    }
 
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       const orderId = Math.floor(Math.random() * 0xffffffff);
@@ -137,7 +181,17 @@ export default function Home() {
         return newOrders;
       });
     } else {
-      alert("Server is not connected.");
+      toast.error("Server is not connected.", {
+        position: "bottom-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Flip,
+      });
     }
   };
 
@@ -152,7 +206,17 @@ export default function Home() {
       const order = buildCancelRequest(clientId ?? 0, orderId);
       ws.current.send(order);
     } else {
-      alert("Server is not connected.");
+      toast.error("Server is not connected.", {
+        position: "bottom-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Flip,
+      });
     }
   };
 
@@ -239,6 +303,20 @@ export default function Home() {
           Submit
         </button>
       </div>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        transition={Flip}
+        aria-label={"Notification"}
+      />
     </main>
   );
 }
